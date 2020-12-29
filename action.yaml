@@ -1,4 +1,4 @@
-name: "Label PR on merge"
+name: "Branch merges watcher"
 
 description: "Add label on branch's PR when it's merged"
 

@@ -17,7 +17,8 @@ const resetPR = async (prHelper: PRHelper) => {
 }
 
 test('Open PR is labeled with in-beta label when merged into targetBranch', async () => {
-  const prHelper = await PRHelper.createInstanceGivenBranch(repoId, 'label-pr-jest-tests', client)
+  const testBranch = `test/label-pr`
+  const prHelper = await PRHelper.createInstanceGivenBranch(repoId, testBranch, client)
   await resetPR(prHelper)
 
   const actions = new Actions(
@@ -28,7 +29,7 @@ test('Open PR is labeled with in-beta label when merged into targetBranch', asyn
             message: `wololo`,
           },
           {
-            message: `Merge branch 'label-pr-jest-tests' into beta`,
+            message: `Merge branch '${testBranch}' into beta`,
           },
         ],
       },
@@ -46,20 +47,16 @@ test('Open PR is labeled with in-beta label when merged into targetBranch', asyn
 }, 20000)
 
 test('Add stale label when PR is modified', async () => {
-  const testBranch = 'stale-label-pr-jest-tests'
+  const testBranch = 'test/stale-label-pr'
   const prHelper = await PRHelper.createInstanceGivenBranch(repoId, testBranch, client)
   await resetPR(prHelper)
   await prHelper.addLabelToPR(actionConfig.mergedLabelName)
-
   const actions = new Actions(
     {
       payload: {
         commits: [
           {
             message: `wololo`,
-          },
-          {
-            message: `Merge branch 'label-pr-jest-tests' into 'stale-label-pr-jest-tests'`,
           },
         ],
         ref: `refs/head/${testBranch}`,
@@ -75,4 +72,25 @@ test('Add stale label when PR is modified', async () => {
   expect(labels.length).toEqual(2)
   expect(prHelper.hasPRLabel(labels, actionConfig.mergedLabelName)).toBeTruthy()
   expect(prHelper.hasPRLabel(labels, actionConfig.staleMergedLabelName)).toBeTruthy()
+}, 20000)
+
+test(`Don't throw when PR is not open`, async () => {
+  const testBranch = 'test/no_open_pr'
+  const actions = new Actions(
+    {
+      payload: {
+        commits: [
+          {
+            message: `wololo`,
+          },
+        ],
+        ref: `refs/head/${testBranch}`,
+      },
+      repo: repoId,
+    } as any,
+    client,
+    actionConfig
+  )
+
+  await expect(actions.pushOnNonTargetBranch()).resolves.toBeFalsy()
 }, 20000)

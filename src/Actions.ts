@@ -49,7 +49,6 @@ export class Actions {
 
   public async pushOnNonTargetBranch() {
     const branch = (this.ctx.payload.ref as string).replace('refs/head/', '')
-
     try {
       const prHelper = await PRHelper.createInstanceGivenBranch(this.ctx.repo, branch, this.client)
       const labels = await prHelper.listPRLabels()

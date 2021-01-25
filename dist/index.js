@@ -5858,13 +5858,21 @@ class Actions {
     }
     async pushOnNonTargetBranch() {
         const branch = this.ctx.payload.ref.replace('refs/head/', '');
-        const prHelper = await PRHelper_1.PRHelper.createInstanceGivenBranch(this.ctx.repo, branch, this.client);
-        const labels = await prHelper.listPRLabels();
-        console.log(`PR labels: ${labels.map((el) => el.name)}`);
-        if (prHelper.hasPRLabel(labels, this.actionConf.mergedLabelName) &&
-            !prHelper.hasPRLabel(labels, this.actionConf.staleMergedLabelName)) {
-            console.log(`Will add '${this.actionConf.staleMergedLabelName}' label`);
-            await prHelper.addLabelToPR(this.actionConf.staleMergedLabelName);
+        try {
+            const prHelper = await PRHelper_1.PRHelper.createInstanceGivenBranch(this.ctx.repo, branch, this.client);
+            const labels = await prHelper.listPRLabels();
+            console.log(`PR labels: ${labels.map((el) => el.name)}`);
+            if (prHelper.hasPRLabel(labels, this.actionConf.mergedLabelName) &&
+                !prHelper.hasPRLabel(labels, this.actionConf.staleMergedLabelName)) {
+                console.log(`Will add '${this.actionConf.staleMergedLabelName}' label`);
+                await prHelper.addLabelToPR(this.actionConf.staleMergedLabelName);
+            }
+        }
+        catch (err) {
+            if (err.message.startsWith('No open PRs for')) {
+                return;
+            }
+            throw err;
         }
     }
 }

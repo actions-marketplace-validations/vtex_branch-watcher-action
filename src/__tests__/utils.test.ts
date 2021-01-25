@@ -3,7 +3,7 @@ import * as github from '@actions/github'
 
 const client = github.getOctokit(process.env['GITHUB_API_TOKEN'] as string)
 const repoId = { owner: 'vtex', repo: 'branch-watcher-action' }
-const branch = 'label-pr-jest-tests'
+const branch = 'test/label-pr'
 
 test('Fetches the given branch PR', async () => {
   const prs = await getBranchOpenPRs({
